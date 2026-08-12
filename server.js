@@ -1,17 +1,19 @@
 const express = require('express');
 const path = require('path');
+const cors = require('cors');
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
 let serverState = {
-    isOnline: true,
+    isOnline: false, // false = public site shows maintenance overlay; true = public site online
     totalUsers: 1420,
     activeUsers: 84,
     gameServerStatus: "All Nodes Operational (v3.0 - Road to 2027/2028)",
-    coachAnnouncement: "[COACH - Level 99]: Welcome staff testing cohort! Early access systems are online. Maintain security protocols.",
+    coachAnnouncement: "[COACH - Level 99]: RecNexus is currently undergoing scheduled deep-core maintenance.",
     activeMap: "Nexus_Arena_v2",
     maps: [
         { id: 1, name: "Nexus_Arena_v2", status: "Active", mode: "Standard VR", playersMax: 32 },
@@ -20,7 +22,7 @@ let serverState = {
     ],
     staffMailboxes: {
         "Coach": [
-            { id: 1, sender: "System", subject: "Level 99 Clearance Active", message: "Welcome back, Coach. You have full oversight over applications and user restrictions.", timestamp: "2026-08-12 12:00" }
+            { id: 1, sender: "System", subject: "Level 99 Clearance Active", message: "Welcome back, Coach. You have full oversight over maintenance status, applications, and user restrictions.", timestamp: "2026-08-12 12:00" }
         ]
     },
     staffApplications: [
@@ -32,20 +34,29 @@ let serverState = {
     ]
 };
 
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
 
 app.get('/api/admin/data', (req, res) => res.json(serverState));
 
+// Toggle Public Site Maintenance Status
+app.post('/api/admin/toggle-status', (req, res) => {
+    const { isOnline } = req.body;
+    if (isOnline !== undefined) {
+        serverState.isOnline = isOnline;
+        res.json({ success: true, message: `Public site status updated. Online: ${isOnline}`, serverState });
+    } else {
+        res.status(400).json({ success: false, message: "Invalid status value." });
+    }
+});
+
 app.post('/api/admin/update', (req, res) => {
-    const { coachAnnouncement, gameServerStatus, isOnline } = req.body;
+    const { coachAnnouncement, gameServerStatus } = req.body;
     if (coachAnnouncement) serverState.coachAnnouncement = coachAnnouncement;
     if (gameServerStatus) serverState.gameServerStatus = gameServerStatus;
-    if (isOnline !== undefined) serverState.isOnline = isOnline;
     res.json({ success: true, serverState });
 });
 
-// Staff Application submission from public site
 app.post('/api/apply', (req, res) => {
     const { username, email, roleRequested, experience } = req.body;
     if (!username || !email) {
@@ -64,7 +75,6 @@ app.post('/api/apply', (req, res) => {
     res.json({ success: true, message: "Staff application submitted successfully! Awaiting Coach review." });
 });
 
-// Coach Application Review: Approve & Auto-Create Account
 app.post('/api/admin/applications/approve', (req, res) => {
     const { appId } = req.body;
     const appIndex = serverState.staffApplications.findIndex(a => a.id == appId);
@@ -72,11 +82,10 @@ app.post('/api/admin/applications/approve', (req, res) => {
         const approvedApp = serverState.staffApplications[appIndex];
         approvedApp.status = "Approved";
         
-        // Automatically create account for approved staff member
         const existingUser = serverState.registeredUsers.find(u => u.username === approvedApp.username);
         if (existingUser) {
             existingUser.role = approvedApp.roleRequested;
-            existingUser.level = 15; // Staff test level
+            existingUser.level = 15;
             existingUser.status = "Active";
         } else {
             serverState.registeredUsers.push({
@@ -87,7 +96,6 @@ app.post('/api/admin/applications/approve', (req, res) => {
             });
         }
 
-        // Send welcome mail to new staff member's mailbox
         if (!serverState.staffMailboxes[approvedApp.username]) {
             serverState.staffMailboxes[approvedApp.username] = [];
         }
@@ -95,17 +103,16 @@ app.post('/api/admin/applications/approve', (req, res) => {
             id: Date.now(),
             sender: "Coach (Level 99)",
             subject: "Staff Application Approved!",
-            message: `Congratulations ${approvedApp.username}! Your application for ${approvedApp.roleRequested} has been approved by Coach. You now have early access to test the system.`,
+            message: `Congratulations ${approvedApp.username}! Your application for ${approvedApp.roleRequested} has been approved by Coach.`,
             timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16)
         });
 
-        res.json({ success: true, message: `Application approved and account automatically created for ${approvedApp.username}!`, serverState });
+        res.json({ success: true, message: `Application approved for ${approvedApp.username}!`, serverState });
     } else {
         res.status(404).json({ success: false, message: "Application not found." });
     }
 });
 
-// Coach Application Reject
 app.post('/api/admin/applications/reject', (req, res) => {
     const { appId } = req.body;
     const app = serverState.staffApplications.find(a => a.id == appId);
@@ -117,9 +124,8 @@ app.post('/api/admin/applications/reject', (req, res) => {
     }
 });
 
-// Coach User Restriction System
 app.post('/api/admin/users/restrict', (req, res) => {
-    const { username, action } = req.body; // action: 'ban' or 'unban'
+    const { username, action } = req.body;
     const user = serverState.registeredUsers.find(u => u.username === username);
     if (user) {
         if (user.role === 'Coach') {
@@ -132,7 +138,6 @@ app.post('/api/admin/users/restrict', (req, res) => {
     }
 });
 
-// Map management
 app.post('/api/admin/maps/switch', (req, res) => {
     const { mapName } = req.body;
     const targetMap = serverState.maps.find(m => m.name === mapName);
@@ -166,14 +171,5 @@ app.post('/api/admin/mail/send', (req, res) => {
     res.json({ success: true, message: `Email dispatched to ${recipient}` });
 });
 
-app.post('/api/admin/reset-password', (req, res) => {
-    const { username, newPassword } = req.body;
-    if (username && newPassword) {
-        res.json({ success: true, message: `Password for user '${username}' has been successfully reset by support team.` });
-    } else {
-        res.status(400).json({ success: false, message: "Username and new password required." });
-    }
-});
-
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log("Backend & Admin API running on port " + PORT));
+app.listen(PORT, () => console.log("Backend Admin API running on port " + PORT));

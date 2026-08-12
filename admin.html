@@ -29,7 +29,7 @@
         
         .nav-btn { background: transparent; border: none; color: var(--text-muted); padding: 13px 16px; text-align: left; font-size: 0.95rem; font-weight: 600; border-radius: 10px; cursor: pointer; margin-bottom: 6px; transition: 0.3s; }
         .nav-btn:hover, .nav-btn.active { background: rgba(139, 92, 246, 0.15); color: #fff; border-left: 4px solid var(--accent-primary); }
-        .coach-only { display: none; border: 1px dashed rgba(239, 68, 68, 0.4); }
+        .coach-only { display: none; }
 
         .main-content { flex: 1; padding: 40px; overflow-y: auto; max-height: 100vh; }
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
@@ -50,6 +50,7 @@
         .btn { background: linear-gradient(135deg, var(--accent-primary), var(--accent-glow)); color: #fff; border: none; border-radius: 12px; padding: 12px 20px; font-weight: 700; cursor: pointer; transition: 0.3s; }
         .btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
         .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { text-align: left; padding: 14px; border-bottom: 1px solid var(--border-glass); font-size: 0.9rem; }
@@ -62,41 +63,40 @@
 <body>
 
     <sidebar>
-        <div class="brand">RecNexus Command</div>
+        <div class="brand">RecNexus Admin</div>
         
         <div class="role-selector">
-            <label>Active User Session Role</label>
+            <label>Active Admin Role</label>
             <select id="sessionRoleSelect" onchange="toggleCoachRoleSession()">
                 <option value="Coach">?? Coach (Level 99 - Full Access)</option>
-                <option value="Staff">??? Standard Staff Member</option>
+                <option value="Staff">??? Standard Staff</option>
             </select>
         </div>
 
         <button class="nav-btn active" onclick="switchTab('overview', event)">?? Overview & Controls</button>
         <button class="nav-btn" onclick="switchTab('maps', event)">??? Map Management</button>
         <button class="nav-btn" onclick="switchTab('mailbox', event)">?? Staff Mailboxes</button>
-        
-        <!-- COACH EXCLUSIVE TABS -->
         <button class="nav-btn coach-exclusive coach-only" onclick="switchTab('applications', event)">?? Staff Applications</button>
-        <button class="nav-btn coach-exclusive coach-only" onclick="switchTab('users', event)">? User Access & Restrictions</button>
-        
-        <button class="nav-btn" onclick="switchTab('tools', event)">??? Support Reset Tool</button>
+        <button class="nav-btn coach-exclusive coach-only" onclick="switchTab('users', event)">? User Restrictions</button>
     </sidebar>
 
     <div class="main-content">
         <header>
             <h1 id="pageTitle">Overview & Controls</h1>
-            <div class="badge" id="serverStatusBadge">?? Systems Operational</div>
+            <div class="badge" id="serverStatusBadge">?? Admin Panel Active</div>
         </header>
 
-        <!-- TAB 1: OVERVIEW -->
+        <!-- TAB 1: OVERVIEW & MAINTENANCE TOGGLE -->
         <div id="overview" class="tab-panel active">
             <div class="grid-2">
                 <div class="card">
-                    <h3>Quick Server Metrics</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 10px;">Total Pre-Registered Accounts: <strong id="totalUsers" style="color:#fff">...</strong></p>
-                    <p style="color: var(--text-muted); margin-bottom: 10px;">Active Session Nodes: <strong id="activeUsers" style="color:#fff">...</strong></p>
-                    <p style="color: var(--text-muted);">Current Active Map: <strong id="activeMapDisplay" style="color:#c4b5fd">...</strong></p>
+                    <h3>Public Site Maintenance Control</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 20px;">Turn the public site maintenance screen on or off. When offline, visitors see the maintenance notice.</p>
+                    <div style="display: flex; gap: 15px;">
+                        <button class="btn btn-success" onclick="toggleServerStatus(true)">Turn Public Site ON</button>
+                        <button class="btn btn-danger" onclick="toggleServerStatus(false)">Put Public Site in Maintenance</button>
+                    </div>
+                    <p style="margin-top: 15px; font-weight: 600;">Current Status: <span id="currentStatusText" style="color:#c4b5fd">Checking...</span></p>
                 </div>
                 <div class="card">
                     <h3>Coach Announcement Broadcast</h3>
@@ -106,94 +106,70 @@
                             <textarea id="coachInput" rows="3"></textarea>
                         </div>
                         <button type="submit" class="btn">Update Broadcast</button>
-                        <div id="announcementAlert" class="alert-box alert-success">Broadcast updated successfully!</div>
+                        <div id="announcementAlert" class="alert-box alert-success">Broadcast updated!</div>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- TAB 2: MAP MANAGEMENT -->
+        <!-- TAB 2: MAPS -->
         <div id="maps" class="tab-panel">
             <div class="card">
-                <h3>Game Environment & Map Manager</h3>
+                <h3>Map Management</h3>
                 <table>
-                    <thead>
-                        <tr><th>Map Name</th><th>Game Mode</th><th>Capacity</th><th>Status</th><th>Action</th></tr>
-                    </thead>
+                    <thead><tr><th>Map Name</th><th>Mode</th><th>Capacity</th><th>Status</th><th>Action</th></tr></thead>
                     <tbody id="mapTableBody"></tbody>
                 </table>
-                <div id="mapAlert" class="alert-box alert-success" style="margin-top: 15px;">Map switched successfully!</div>
             </div>
         </div>
 
-        <!-- TAB 3: STAFF MAILBOXES -->
+        <!-- TAB 3: MAILBOX -->
         <div id="mailbox" class="tab-panel">
             <div class="grid-2">
                 <div class="card">
-                    <h3>Staff Inbox Viewer</h3>
+                    <h3>Staff Inbox</h3>
                     <div class="form-group">
-                        <label>Select Mailbox</label>
+                        <label>Mailbox</label>
                         <select id="staffSelect" onchange="loadStaffMailbox()">
                             <option value="Coach">Coach (Level 99)</option>
-                            <option value="CyberKnight99">CyberKnight99 (Staff)</option>
                         </select>
                     </div>
                     <div id="inboxContainer" style="margin-top: 15px; max-height: 250px; overflow-y: auto;"></div>
                 </div>
                 <div class="card">
-                    <h3>Send Internal Staff Email</h3>
+                    <h3>Send Internal Mail</h3>
                     <form onsubmit="sendStaffEmail(event)">
                         <div class="form-group"><label>Sender</label><input type="text" id="mailSender" value="Coach" required></div>
-                        <div class="form-group"><label>Recipient</label><input type="text" id="mailRecipient" placeholder="CyberKnight99" required></div>
+                        <div class="form-group"><label>Recipient</label><input type="text" id="mailRecipient" required></div>
                         <div class="form-group"><label>Subject</label><input type="text" id="mailSubject" required></div>
                         <div class="form-group"><label>Message</label><textarea id="mailMessage" rows="3" required></textarea></div>
                         <button type="submit" class="btn">Send Email</button>
-                        <div id="mailAlert" class="alert-box alert-success">Email dispatched!</div>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- TAB 4: COACH EXCLUSIVE - STAFF APPLICATIONS -->
+        <!-- TAB 4: APPLICATIONS -->
         <div id="applications" class="tab-panel">
             <div class="card">
-                <h3>Pending Staff Applications (Coach Review)</h3>
-                <p style="color: var(--text-muted); margin-bottom: 20px;">Approving an application automatically provisions an account and grants the tester access.</p>
+                <h3>Staff Applications Review</h3>
                 <table>
-                    <thead>
-                        <tr><th>Applicant</th><th>Role Requested</th><th>Experience</th><th>Status</th><th>Coach Actions</th></tr>
-                    </thead>
+                    <thead><tr><th>Applicant</th><th>Role</th><th>Experience</th><th>Status</th><th>Action</th></tr></thead>
                     <tbody id="applicationTableBody"></tbody>
                 </table>
                 <div id="appAlert" class="alert-box alert-success" style="margin-top: 15px;"></div>
             </div>
         </div>
 
-        <!-- TAB 5: COACH EXCLUSIVE - USER MANAGEMENT & RESTRICTIONS -->
+        <!-- TAB 5: USER RESTRICTIONS -->
         <div id="users" class="tab-panel">
             <div class="card">
-                <h3>User Access & Restriction Management</h3>
-                <p style="color: var(--text-muted); margin-bottom: 20px;">Restrict or ban user access to game server nodes and pre-release tools.</p>
+                <h3>User Restrictions</h3>
                 <table>
-                    <thead>
-                        <tr><th>Username</th><th>Role</th><th>Access Level</th><th>Status</th><th>Restriction Control</th></tr>
-                    </thead>
+                    <thead><tr><th>Username</th><th>Role</th><th>Level</th><th>Status</th><th>Action</th></tr></thead>
                     <tbody id="userTableBody"></tbody>
                 </table>
                 <div id="userAlert" class="alert-box alert-success" style="margin-top: 15px;"></div>
-            </div>
-        </div>
-
-        <!-- TAB 6: SUPPORT TOOLS -->
-        <div id="tools" class="tab-panel">
-            <div class="card" style="max-width: 600px;">
-                <h3>Support Password Reset Tool</h3>
-                <form onsubmit="resetPassword(event)">
-                    <div class="form-group"><label>Target Username</label><input type="text" id="resetUsername" required></div>
-                    <div class="form-group"><label>New Secure Password</label><input type="text" id="resetPasswordVal" required></div>
-                    <button type="submit" class="btn">Execute Password Reset</button>
-                    <div id="resetAlert" class="alert-box alert-success"></div>
-                </form>
             </div>
         </div>
     </div>
@@ -202,14 +178,7 @@
         function toggleCoachRoleSession() {
             const role = document.getElementById('sessionRoleSelect').value;
             const coachElements = document.querySelectorAll('.coach-exclusive');
-            if (role === 'Coach') {
-                coachElements.forEach(el => el.style.display = 'block');
-            } else {
-                coachElements.forEach(el => el.style.display = 'none');
-                if(document.getElementById('applications').classList.contains('active') || document.getElementById('users').classList.contains('active')) {
-                    switchTab('overview', { currentTarget: document.querySelector('.nav-btn') });
-                }
-            }
+            coachElements.forEach(el => el.style.display = role === 'Coach' ? 'block' : 'none');
         }
 
         function switchTab(tabId, event) {
@@ -217,103 +186,45 @@
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             event.currentTarget.classList.add('active');
-            
-            const titles = { 
-                'overview': 'Overview & Controls', 
-                'maps': 'Map Management', 
-                'mailbox': 'Staff Mailboxes', 
-                'applications': 'Staff Applications Review',
-                'users': 'User Access & Restrictions',
-                'tools': 'User Support Tools' 
-            };
-            document.getElementById('pageTitle').innerText = titles[tabId];
             if(tabId === 'mailbox') loadStaffMailbox();
         }
 
         async function fetchDashboardData() {
-            try {
-                const res = await fetch('/api/admin/data');
-                const data = await res.json();
-                document.getElementById('totalUsers').innerText = data.totalUsers;
-                document.getElementById('activeUsers').innerText = data.activeUsers;
-                document.getElementById('activeMapDisplay').innerText = data.activeMap;
-                document.getElementById('coachInput').value = data.coachAnnouncement;
-                
-                // Maps Table
-                let mapHtml = '';
-                data.maps.forEach(m => {
-                    mapHtml += `<tr>
-                        <td><strong>${m.name}</strong></td><td>${m.mode}</td><td>${m.playersMax}</td>
-                        <td><span style="color:${m.status==='Active'?'var(--success)':'var(--text-muted)'}">${m.status}</span></td>
-                        <td><button class="btn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="switchMap('${m.name}')">Load</button></td>
-                    </tr>`;
-                });
-                document.getElementById('mapTableBody').innerHTML = mapHtml;
+            const res = await fetch('/api/admin/data');
+            const data = await res.json();
+            document.getElementById('currentStatusText').innerText = data.isOnline ? "?? Online (Public Site Active)" : "?? Maintenance Mode (Overlay Active)";
+            document.getElementById('coachInput').value = data.coachAnnouncement;
 
-                // Applications Table (Coach Only)
-                let appHtml = '';
-                if(data.staffApplications && data.staffApplications.length > 0) {
-                    data.staffApplications.forEach(a => {
-                        appHtml += `<tr>
-                            <td><strong>${a.username}</strong><br><span style="font-size:0.8rem; color:var(--text-muted);">${a.email}</span></td>
-                            <td>${a.roleRequested}</td><td>${a.experience}</td>
-                            <td><span style="color:${a.status==='Approved'?'var(--success)':a.status==='Rejected'?'var(--danger)':'#f59e0b'}">${a.status}</span></td>
-                            <td>
-                                ${a.status === 'Pending' ? `
-                                    <button class="btn" style="padding:6px 10px; font-size:0.75rem;" onclick="approveApp(${a.id})">Approve</button>
-                                    <button class="btn btn-danger" style="padding:6px 10px; font-size:0.75rem; margin-left:5px;" onclick="rejectApp(${a.id})">Reject</button>
-                                ` : 'Processed'}
-                            </td>
-                        </tr>`;
-                    });
-                } else {
-                    appHtml = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No pending applications.</td></tr>`;
-                }
-                document.getElementById('applicationTableBody').innerHTML = appHtml;
+            let mapHtml = '';
+            data.maps.forEach(m => {
+                mapHtml += `<tr><td><strong>${m.name}</strong></td><td>${m.mode}</td><td>${m.playersMax}</td><td>${m.status}</td><td><button class="btn" style="padding:4px 10px;font-size:0.8rem;" onclick="switchMap('${m.name}')">Load</button></td></tr>`;
+            });
+            document.getElementById('mapTableBody').innerHTML = mapHtml;
 
-                // User Management Table (Coach Only)
-                let userHtml = '';
-                if(data.registeredUsers) {
-                    data.registeredUsers.forEach(u => {
-                        userHtml += `<tr>
-                            <td><strong>${u.username}</strong></td>
-                            <td>${u.role}</td>
-                            <td>Level ${u.level}</td>
-                            <td><span style="color:${u.status.includes('Restricted')?'var(--danger)':'var(--success)'}">${u.status}</span></td>
-                            <td>
-                                ${u.role !== 'Coach' ? `
-                                    ${u.status.includes('Restricted') ? 
-                                        `<button class="btn" style="padding:5px 10px; font-size:0.75rem;" onclick="restrictUser('${u.username}', 'unban')">Restore Access</button>` :
-                                        `<button class="btn btn-danger" style="padding:5px 10px; font-size:0.75rem;" onclick="restrictUser('${u.username}', 'ban')">Restrict Access</button>`
-                                    }
-                                ` : '<span style="color:var(--text-muted)">Protected</span>'}
-                            </td>
-                        </tr>`;
-                    });
-                }
-                document.getElementById('userTableBody').innerHTML = userHtml;
+            let appHtml = '';
+            data.staffApplications.forEach(a => {
+                appHtml += `<tr><td><strong>${a.username}</strong><br><small>${a.email}</small></td><td>${a.roleRequested}</td><td>${a.experience}</td><td>${a.status}</td><td>${a.status==='Pending'?`<button class="btn" style="padding:4px 8px;font-size:0.75rem;" onclick="approveApp(${a.id})">Approve</button>`:'Done'}</td></tr>`;
+            });
+            document.getElementById('applicationTableBody').innerHTML = appHtml;
 
-            } catch (err) {
-                console.error("Failed to load dashboard data", err);
-            }
+            let userHtml = '';
+            data.registeredUsers.forEach(u => {
+                userHtml += `<tr><td><strong>${u.username}</strong></td><td>${u.role}</td><td>Lvl ${u.level}</td><td>${u.status}</td><td>${u.role!=='Coach'?`<button class="btn btn-danger" style="padding:4px 8px;font-size:0.75rem;" onclick="restrictUser('${u.username}','${u.status.includes('Restricted')?'unban':'ban'}')">${u.status.includes('Restricted')?'Restore':'Restrict'}</button>`:'Protected'}</td></tr>`;
+            });
+            document.getElementById('userTableBody').innerHTML = userHtml;
         }
 
-        async function approveApp(appId) {
-            const res = await fetch('/api/admin/applications/approve', {
+        async function toggleServerStatus(isOnline) {
+            await fetch('/api/admin/toggle-status', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ appId })
+                body: JSON.stringify({ isOnline })
             });
-            const data = await res.json();
-            const alert = document.getElementById('appAlert');
-            alert.innerText = data.message;
-            alert.style.display = 'block';
-            setTimeout(() => alert.style.display = 'none', 4000);
             fetchDashboardData();
         }
 
-        async function rejectApp(appId) {
-            const res = await fetch('/api/admin/applications/reject', {
+        async function approveApp(appId) {
+            await fetch('/api/admin/applications/approve', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ appId })
@@ -322,30 +233,12 @@
         }
 
         async function restrictUser(username, action) {
-            const res = await fetch('/api/admin/users/restrict', {
+            await fetch('/api/admin/users/restrict', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, action })
             });
-            const data = await res.json();
-            const alert = document.getElementById('userAlert');
-            alert.innerText = data.message;
-            alert.style.display = 'block';
-            setTimeout(() => alert.style.display = 'none', 4000);
             fetchDashboardData();
-        }
-
-        async function updateAnnouncement(e) {
-            e.preventDefault();
-            const msg = document.getElementById('coachInput').value;
-            await fetch('/api/admin/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ coachAnnouncement: msg })
-            });
-            const alert = document.getElementById('announcementAlert');
-            alert.style.display = 'block';
-            setTimeout(() => alert.style.display = 'none', 3000);
         }
 
         async function switchMap(mapName) {
@@ -354,67 +247,28 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ mapName })
             });
-            const alert = document.getElementById('mapAlert');
-            alert.style.display = 'block';
-            setTimeout(() => alert.style.display = 'none', 3000);
             fetchDashboardData();
         }
 
+        async function updateAnnouncement(e) {
+            e.preventDefault();
+            const coachAnnouncement = document.getElementById('coachInput').value;
+            await fetch('/api/admin/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ coachAnnouncement })
+            });
+            alert("Announcement updated!");
+        }
+
         async function loadStaffMailbox() {
-            const staff = document.getElementById('staffSelect').value;
-            const res = await fetch(`/api/admin/mail/${staff}`);
+            const res = await fetch('/api/admin/mail/Coach');
             const data = await res.json();
             let html = '';
-            if(data.inbox && data.inbox.length > 0) {
-                data.inbox.forEach(mail => {
-                    html += `<div style="background: rgba(10,14,28,0.5); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; margin-bottom: 10px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">
-                            <span>From: <strong>${mail.sender}</strong></span><span>${mail.timestamp}</span>
-                        </div>
-                        <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; color: #c4b5fd;">${mail.subject}</div>
-                        <div style="font-size: 0.9rem;">${mail.message}</div>
-                    </div>`;
-                });
-            } else {
-                html = `<p style="color: var(--text-muted); text-align: center; padding: 20px;">No messages in mailbox.</p>`;
-            }
+            data.inbox.forEach(m => {
+                html += `<div style="background:rgba(10,14,28,0.5);padding:10px;border-radius:8px;margin-bottom:8px;"><small>From: ${m.sender}</small><br><strong>${m.subject}</strong><p>${m.message}</p></div>`;
+            });
             document.getElementById('inboxContainer').innerHTML = html;
-        }
-
-        async function sendStaffEmail(e) {
-            e.preventDefault();
-            const sender = document.getElementById('mailSender').value;
-            const recipient = document.getElementById('mailRecipient').value;
-            const subject = document.getElementById('mailSubject').value;
-            const message = document.getElementById('mailMessage').value;
-
-            await fetch('/api/admin/mail/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sender, recipient, subject, message })
-            });
-            const alert = document.getElementById('mailAlert');
-            alert.style.display = 'block';
-            setTimeout(() => alert.style.display = 'none', 3000);
-            document.getElementById('mailSubject').value = '';
-            document.getElementById('mailMessage').value = '';
-            if(document.getElementById('staffSelect').value === recipient) loadStaffMailbox();
-        }
-
-        async function resetPassword(e) {
-            e.preventDefault();
-            const username = document.getElementById('resetUsername').value;
-            const newPassword = document.getElementById('resetPasswordVal').value;
-            const res = await fetch('/api/admin/reset-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, newPassword })
-            });
-            const data = await res.json();
-            const alert = document.getElementById('resetAlert');
-            alert.innerText = data.message;
-            alert.style.display = 'block';
-            setTimeout(() => alert.style.display = 'none', 4000);
         }
 
         toggleCoachRoleSession();
