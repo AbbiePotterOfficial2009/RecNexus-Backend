@@ -3,120 +3,325 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RecNexus | Admin Deck & Game Server API</title>
+    <title>RecNexus | Command & Admin Console</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;850&display=swap');
-        * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; margin: 0; padding: 0; }
-        body { background: #080c14; color: #fff; min-height: 100vh; padding: 2rem; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 1.5rem; }
-        .header { background: rgba(23, 32, 51, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-        .header h1 { font-size: 1.4rem; background: linear-gradient(135deg, #00d2ff, #7928ca); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
-        .stat-card { background: rgba(17, 24, 39, 0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; }
-        .stat-value { font-size: 1.6rem; font-weight: 850; color: #00d2ff; }
-        .card { background: rgba(17, 24, 39, 0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 2rem; display: flex; flex-direction: column; gap: 1.2rem; }
-        .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-        label { font-size: 0.85rem; color: #94a3b8; font-weight: 600; }
-        input, textarea { background: #0b0f19; border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 0.8rem; border-radius: 8px; font-size: 0.95rem; }
-        textarea { resize: vertical; min-height: 80px; }
-        .btn { background: linear-gradient(135deg, #00d2ff, #7928ca); color: #fff; border: none; padding: 0.9rem; border-radius: 10px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
-        .btn:hover { opacity: 0.9; }
-        .msg { font-size: 0.85rem; font-weight: 600; display: none; }
+        :root {
+            --bg-deep: #070913;
+            --card-bg: rgba(18, 22, 40, 0.85);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --accent-primary: #8b5cf6;
+            --accent-glow: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+        body { background-color: var(--bg-deep); color: var(--text-main); min-height: 100vh; display: flex; }
+
+        /* Sidebar Navigation */
+        sidebar {
+            width: 260px;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border-glass);
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+            backdrop-filter: blur(20px);
+        }
+        .brand { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, #fff, #c4b5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 35px; }
+        .nav-btn {
+            background: transparent; border: none; color: var(--text-muted); padding: 14px 18px; text-align: left; font-size: 1rem; font-weight: 600; border-radius: 12px; cursor: pointer; margin-bottom: 8px; transition: all 0.3s ease;
+        }
+        .nav-btn:hover, .nav-btn.active { background: rgba(139, 92, 246, 0.15); color: #fff; border-left: 4px solid var(--accent-primary); }
+
+        /* Main Workspace */
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; max-height: 100vh; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        header h1 { font-size: 2rem; font-weight: 700; }
+        .badge { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+
+        /* Tab Panels */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Cards and Grids */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px; }
+        .card { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 20px; padding: 30px; backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin-bottom: 25px; }
+        .card h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; color: #fff; }
+
+        /* Form elements */
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+        input, textarea, select { width: 100%; background: rgba(10, 14, 28, 0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 16px; color: #fff; font-size: 1rem; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent-primary); box-shadow: 0 0 12px rgba(139, 92, 246, 0.3); }
+        .btn { background: linear-gradient(135deg, var(--accent-primary), var(--accent-glow)); color: #fff; border: none; border-radius: 12px; padding: 12px 24px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
+
+        /* Tables & Lists */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: left; padding: 14px; border-bottom: 1px solid var(--border-glass); font-size: 0.95rem; }
+        th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; }
+        
+        .alert-box { padding: 12px; border-radius: 10px; margin-top: 12px; font-weight: 600; font-size: 0.9rem; display: none; }
+        .alert-success { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h1>RecNexus Admin & Game Server Control Deck</h1>
-        <span style="color: #10b981; font-weight: 700; font-size: 0.85rem;">? API Status: Active</span>
+
+    <sidebar>
+        <div class="brand">RecNexus Admin</div>
+        <button class="nav-btn active" onclick="switchTab('overview', event)">?? Overview & Controls</button>
+        <button class="nav-btn" onclick="switchTab('maps', event)">??? Map Management</button>
+        <button class="nav-btn" onclick="switchTab('mailbox', event)">?? Staff Mailboxes</button>
+        <button class="nav-btn" onclick="switchTab('tools', event)">??? User Support Tools</button>
+    </sidebar>
+
+    <div class="main-content">
+        <header>
+            <h1 id="pageTitle">Overview & Controls</h1>
+            <div class="badge" id="serverStatusBadge">?? Systems Operational</div>
+        </header>
+
+        <!-- TAB 1: OVERVIEW -->
+        <div id="overview" class="tab-panel active">
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Quick Server Metrics</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 10px;">Total Pre-Registered Accounts: <strong id="totalUsers" style="color:#fff">...</strong></p>
+                    <p style="color: var(--text-muted); margin-bottom: 10px;">Active Session Nodes: <strong id="activeUsers" style="color:#fff">...</strong></p>
+                    <p style="color: var(--text-muted);">Current Active Map: <strong id="activeMapDisplay" style="color:#c4b5fd">...</strong></p>
+                </div>
+                <div class="card">
+                    <h3>Coach Announcement Broadcast</h3>
+                    <form onsubmit="updateAnnouncement(event)">
+                        <div class="form-group">
+                            <label>Broadcast Message</label>
+                            <textarea id="coachInput" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn">Update Broadcast</button>
+                        <div id="announcementAlert" class="alert-box alert-success">Broadcast updated successfully!</div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: MAP MANAGEMENT -->
+        <div id="maps" class="tab-panel">
+            <div class="card">
+                <h3>Game Environment & Map Manager</h3>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">Switch active map nodes across active game server instances.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Map Name</th>
+                            <th>Game Mode</th>
+                            <th>Max Capacity</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mapTableBody">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+                <div id="mapAlert" class="alert-box alert-success" style="margin-top: 15px;">Map switched successfully!</div>
+            </div>
+        </div>
+
+        <!-- TAB 3: STAFF MAILBOXES -->
+        <div id="mailbox" class="tab-panel">
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Staff Inbox Viewer</h3>
+                    <div class="form-group">
+                        <label>Select Staff Member</label>
+                        <select id="staffSelect" onchange="loadStaffMailbox()">
+                            <option value="AbbiePotter">AbbiePotter (Level 99 Lead)</option>
+                            <option value="Mod_Alex">Mod_Alex (Moderator)</option>
+                        </select>
+                    </div>
+                    <div id="inboxContainer" style="margin-top: 15px; max-height: 250px; overflow-y: auto;">
+                        <!-- Mail items loaded here -->
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Send Internal Staff Email</h3>
+                    <form onsubmit="sendStaffEmail(event)">
+                        <div class="form-group">
+                            <label>Sender (You)</label>
+                            <input type="text" id="mailSender" value="AbbiePotter" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Recipient Staff Member</label>
+                            <input type="text" id="mailRecipient" placeholder="Mod_Alex" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Subject</label>
+                            <input type="text" id="mailSubject" placeholder="Brief subject line" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Message</label>
+                            <textarea id="mailMessage" rows="3" placeholder="Write internal memo..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn">Send Email</button>
+                        <div id="mailAlert" class="alert-box alert-success">Email dispatched to staff inbox!</div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: TOOLS -->
+        <div id="tools" class="tab-panel">
+            <div class="card" style="max-width: 600px;">
+                <h3>Support Password Reset Tool</h3>
+                <form onsubmit="resetPassword(event)">
+                    <div class="form-group">
+                        <label>Target Username</label>
+                        <input type="text" id="resetUsername" placeholder="e.g. GamerTag123" required>
+                    </div>
+                    <div class="form-group">
+                        <label>New Secure Password</label>
+                        <input type="text" id="resetPasswordVal" placeholder="New temporary password" required>
+                    </div>
+                    <button type="submit" class="btn">Execute Password Reset</button>
+                    <div id="resetAlert" class="alert-box alert-success"></div>
+                </form>
+            </div>
+        </div>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <label>Total Registered Users</label>
-            <div class="stat-value" id="totalUsers">Loading...</div>
-        </div>
-        <div class="stat-card">
-            <label>Active Users Online</label>
-            <div class="stat-value" id="activeUsers">Loading...</div>
-        </div>
-        <div class="stat-card">
-            <label>Game Server Node</label>
-            <div class="stat-value" id="serverStateVal" style="font-size: 1.1rem; color: #10b981;">Online</div>
-        </div>
-    </div>
-
-    <div class="card">
-        <h2 style="font-size: 1.1rem; color: #00d2ff;">Coach (Level 99) Global Announcement</h2>
-        <div class="form-group">
-            <label>Announcement Broadcast Message</label>
-            <textarea id="coachAnnouncement"></textarea>
-        </div>
-        <div class="form-group">
-            <label>Game Server Status Message</label>
-            <input type="text" id="gameServerStatus">
-        </div>
-        <button class="btn" onclick="updateServer()">Broadcast Announcement & Status</button>
-        <div id="statusMsg" class="msg" style="color: #10b981;">Broadcast updated successfully!</div>
-    </div>
-
-    <div class="card">
-        <h2 style="font-size: 1.1rem; color: #00d2ff;">Support Team: User Password Reset</h2>
-        <div class="form-group">
-            <label>Username / Gamertag</label>
-            <input type="text" id="resetUser" placeholder="Enter target username...">
-        </div>
-        <div class="form-group">
-            <label>New Temporary Password</label>
-            <input type="text" id="resetPass" placeholder="Enter new password...">
-        </div>
-        <button class="btn" style="background: linear-gradient(135deg, #ef4444, #7928ca);" onclick="resetPassword()">Reset User Password</button>
-        <div id="resetMsg" class="msg"></div>
-    </div>
-</div>
-
-<script>
-    async function loadData() {
-        const res = await fetch('/api/admin/data');
-        const data = await res.json();
-        document.getElementById('totalUsers').textContent = data.totalUsers;
-        document.getElementById('activeUsers').textContent = data.activeUsers;
-        document.getElementById('coachAnnouncement').value = data.coachAnnouncement;
-        document.getElementById('gameServerStatus').value = data.gameServerStatus;
-        document.getElementById('serverStateVal').textContent = data.isOnline ? 'Operational' : 'Maintenance';
-    }
-
-    async function updateServer() {
-        const res = await fetch('/api/admin/update', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                coachAnnouncement: document.getElementById('coachAnnouncement').value,
-                gameServerStatus: document.getElementById('gameServerStatus').value,
-                isOnline: true
-            })
-        });
-        const result = await res.json();
-        if(result.success) {
-            const m = document.getElementById('statusMsg'); m.style.display = 'block';
-            setTimeout(() => m.style.display = 'none', 3000);
+    <script>
+        function switchTab(tabId, event) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            
+            const titles = { 'overview': 'Overview & Controls', 'maps': 'Map Management', 'mailbox': 'Staff Mailboxes', 'tools': 'User Support Tools' };
+            document.getElementById('pageTitle').innerText = titles[tabId];
+            if(tabId === 'mailbox') loadStaffMailbox();
         }
-    }
 
-    async function resetPassword() {
-        const username = document.getElementById('resetUser').value;
-        const newPassword = document.getElementById('resetPass').value;
-        const res = await fetch('/api/admin/reset-password', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, newPassword })
-        });
-        const result = await res.json();
-        const rm = document.getElementById('resetMsg');
-        rm.textContent = result.message;
-        rm.style.color = result.success ? '#10b981' : '#ef4444';
-        rm.style.display = 'block';
-    }
+        async function fetchDashboardData() {
+            try {
+                const res = await fetch('/api/admin/data');
+                const data = await res.json();
+                document.getElementById('totalUsers').innerText = data.totalUsers;
+                document.getElementById('activeUsers').innerText = data.activeUsers;
+                document.getElementById('activeMapDisplay').innerText = data.activeMap;
+                document.getElementById('coachInput').value = data.coachAnnouncement;
+                
+                let mapHtml = '';
+                data.maps.forEach(m => {
+                    mapHtml += `<tr>
+                        <td><strong>${m.name}</strong></td>
+                        <td>${m.mode}</td>
+                        <td>${m.playersMax} players</td>
+                        <td><span style="color: ${m.status==='Active'?'var(--success)':'var(--text-muted)'}">${m.status}</span></td>
+                        <td><button class="btn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="switchMap('${m.name}')">Load Map</button></td>
+                    </tr>`;
+                });
+                document.getElementById('mapTableBody').value = mapHtml;
+                document.getElementById('mapTableBody').innerHTML = mapHtml;
+                window.staffMailData = data.staffMailboxes;
+            } catch (err) {
+                console.error("Failed to load dashboard data", err);
+            }
+        }
 
-    loadData();
-</script>
+        async function updateAnnouncement(e) {
+            e.preventDefault();
+            const msg = document.getElementById('coachInput').value;
+            const res = await fetch('/api/admin/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ coachAnnouncement: msg })
+            });
+            if(res.ok) {
+                const alert = document.getElementById('announcementAlert');
+                alert.style.display = 'block';
+                setTimeout(() => alert.style.display = 'none', 3000);
+            }
+        }
+
+        async function switchMap(mapName) {
+            const res = await fetch('/api/admin/maps/switch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mapName })
+            });
+            if(res.ok) {
+                const alert = document.getElementById('mapAlert');
+                alert.style.display = 'block';
+                setTimeout(() => alert.style.display = 'none', 3000);
+                fetchDashboardData();
+            }
+        }
+
+        async function loadStaffMailbox() {
+            const staff = document.getElementById('staffSelect').value;
+            const res = await fetch(`/api/admin/mail/${staff}`);
+            const data = await res.json();
+            let html = '';
+            if(data.inbox && data.inbox.length > 0) {
+                data.inbox.forEach(mail => {
+                    html += `<div style="background: rgba(10,14,28,0.5); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">
+                            <span>From: <strong>${mail.sender}</strong></span>
+                            <span>${mail.timestamp}</span>
+                        </div>
+                        <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; color: #c4b5fd;">${mail.subject}</div>
+                        <div style="font-size: 0.9rem;">${mail.message}</div>
+                    </div>`;
+                });
+            } else {
+                html = `<p style="color: var(--text-muted); text-align: center; padding: 20px;">No messages in mailbox.</p>`;
+            }
+            document.getElementById('inboxContainer').innerHTML = html;
+        }
+
+        async function sendStaffEmail(e) {
+            e.preventDefault();
+            const sender = document.getElementById('mailSender').value;
+            const recipient = document.getElementById('mailRecipient').value;
+            const subject = document.getElementById('mailSubject').value;
+            const message = document.getElementById('mailMessage').value;
+
+            const res = await fetch('/api/admin/mail/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sender, recipient, subject, message })
+            });
+            if(res.ok) {
+                const alert = document.getElementById('mailAlert');
+                alert.style.display = 'block';
+                setTimeout(() => alert.style.display = 'none', 3000);
+                document.getElementById('mailSubject').value = '';
+                document.getElementById('mailMessage').value = '';
+                if(document.getElementById('staffSelect').value === recipient) loadStaffMailbox();
+            }
+        }
+
+        async function resetPassword(e) {
+            e.preventDefault();
+            const username = document.getElementById('resetUsername').value;
+            const newPassword = document.getElementById('resetPasswordVal').value;
+            const res = await fetch('/api/admin/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, newPassword })
+            });
+            const data = await res.json();
+            const alert = document.getElementById('resetAlert');
+            alert.innerText = data.message;
+            alert.style.display = 'block';
+            setTimeout(() => alert.style.display = 'none', 4000);
+        }
+
+        fetchDashboardData();
+    </script>
 </body>
 </html>
