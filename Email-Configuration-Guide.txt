@@ -1,0 +1,21 @@
+============================================================
+RECNEXUS CUSTOM DOMAIN EMAIL CONFIGURATION GUIDE
+============================================================
+
+1. Domain Server & MX Setup:
+   - Domain: recnexus.com
+   - Support Email: support@recnexus.com
+   - Staff Email Formats:
+     * Firstname.Lastname@recnexus.com (e.g., Abbie.Potter@recnexus.com)
+     * Gamertag@recnexus.com (e.g., Coach.RecNexus@recnexus.com)
+
+2. Recommended Free/Managed Business Email Providers:
+   - Zoho Mail (Free tier allows custom domain hosting like support@recnexus.com)
+   - Cloudflare Email Routing (Free redirection to your personal inbox)
+   - Google Workspace / Microsoft 365 (Paid enterprise options)
+
+3. DNS Records Required on your Domain Registrar:
+   - MX Records (to route mail to your provider)
+   - SPF Record: v=spf1 include:mx.zoho.com ~all (example)
+   - DKIM & DMARC records for secure authentication.
+============================================================

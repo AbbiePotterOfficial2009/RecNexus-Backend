@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecNexus | Admin Deck & Game Server API</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;850&display=swap');
+        * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; margin: 0; padding: 0; }
+        body { background: #080c14; color: #fff; min-height: 100vh; padding: 2rem; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 1.5rem; }
+        .header { background: rgba(23, 32, 51, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.4rem; background: linear-gradient(135deg, #00d2ff, #7928ca); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .stat-card { background: rgba(17, 24, 39, 0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; }
+        .stat-value { font-size: 1.6rem; font-weight: 850; color: #00d2ff; }
+        .card { background: rgba(17, 24, 39, 0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 2rem; display: flex; flex-direction: column; gap: 1.2rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+        label { font-size: 0.85rem; color: #94a3b8; font-weight: 600; }
+        input, textarea { background: #0b0f19; border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 0.8rem; border-radius: 8px; font-size: 0.95rem; }
+        textarea { resize: vertical; min-height: 80px; }
+        .btn { background: linear-gradient(135deg, #00d2ff, #7928ca); color: #fff; border: none; padding: 0.9rem; border-radius: 10px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
+        .btn:hover { opacity: 0.9; }
+        .msg { font-size: 0.85rem; font-weight: 600; display: none; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>RecNexus Admin & Game Server Control Deck</h1>
+        <span style="color: #10b981; font-weight: 700; font-size: 0.85rem;">? API Status: Active</span>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <label>Total Registered Users</label>
+            <div class="stat-value" id="totalUsers">Loading...</div>
+        </div>
+        <div class="stat-card">
+            <label>Active Users Online</label>
+            <div class="stat-value" id="activeUsers">Loading...</div>
+        </div>
+        <div class="stat-card">
+            <label>Game Server Node</label>
+            <div class="stat-value" id="serverStateVal" style="font-size: 1.1rem; color: #10b981;">Online</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 style="font-size: 1.1rem; color: #00d2ff;">Coach (Level 99) Global Announcement</h2>
+        <div class="form-group">
+            <label>Announcement Broadcast Message</label>
+            <textarea id="coachAnnouncement"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Game Server Status Message</label>
+            <input type="text" id="gameServerStatus">
+        </div>
+        <button class="btn" onclick="updateServer()">Broadcast Announcement & Status</button>
+        <div id="statusMsg" class="msg" style="color: #10b981;">Broadcast updated successfully!</div>
+    </div>
+
+    <div class="card">
+        <h2 style="font-size: 1.1rem; color: #00d2ff;">Support Team: User Password Reset</h2>
+        <div class="form-group">
+            <label>Username / Gamertag</label>
+            <input type="text" id="resetUser" placeholder="Enter target username...">
+        </div>
+        <div class="form-group">
+            <label>New Temporary Password</label>
+            <input type="text" id="resetPass" placeholder="Enter new password...">
+        </div>
+        <button class="btn" style="background: linear-gradient(135deg, #ef4444, #7928ca);" onclick="resetPassword()">Reset User Password</button>
+        <div id="resetMsg" class="msg"></div>
+    </div>
+</div>
+
+<script>
+    async function loadData() {
+        const res = await fetch('/api/admin/data');
+        const data = await res.json();
+        document.getElementById('totalUsers').textContent = data.totalUsers;
+        document.getElementById('activeUsers').textContent = data.activeUsers;
+        document.getElementById('coachAnnouncement').value = data.coachAnnouncement;
+        document.getElementById('gameServerStatus').value = data.gameServerStatus;
+        document.getElementById('serverStateVal').textContent = data.isOnline ? 'Operational' : 'Maintenance';
+    }
+
+    async function updateServer() {
+        const res = await fetch('/api/admin/update', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                coachAnnouncement: document.getElementById('coachAnnouncement').value,
+                gameServerStatus: document.getElementById('gameServerStatus').value,
+                isOnline: true
+            })
+        });
+        const result = await res.json();
+        if(result.success) {
+            const m = document.getElementById('statusMsg'); m.style.display = 'block';
+            setTimeout(() => m.style.display = 'none', 3000);
+        }
+    }
+
+    async function resetPassword() {
+        const username = document.getElementById('resetUser').value;
+        const newPassword = document.getElementById('resetPass').value;
+        const res = await fetch('/api/admin/reset-password', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, newPassword })
+        });
+        const result = await res.json();
+        const rm = document.getElementById('resetMsg');
+        rm.textContent = result.message;
+        rm.style.color = result.success ? '#10b981' : '#ef4444';
+        rm.style.display = 'block';
+    }
+
+    loadData();
+</script>
+</body>
+</html>
