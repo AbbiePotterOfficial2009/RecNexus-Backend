@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RecNexus | Official Community Hub & Roadmap</title>
+    <title>RecNexus | Official Community Hub (2027-2028 Release)</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-deep: #070913;
-            --card-bg: rgba(18, 22, 40, 0.85);
+            --card-bg: rgba(18, 22, 40, 0.8);
             --border-glass: rgba(255, 255, 255, 0.08);
             --accent-primary: #8b5cf6;
             --accent-glow: #3b82f6;
@@ -24,104 +24,127 @@
         .orb-1 { width: 500px; height: 500px; background: var(--accent-primary); top: -100px; left: -100px; }
         .orb-2 { width: 550px; height: 550px; background: var(--neon-pink); bottom: -150px; right: -100px; }
 
-        #maintenanceOverlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(7, 9, 19, 0.97); backdrop-filter: blur(25px);
-            z-index: 99999; display: none; justify-content: center; align-items: center; padding: 20px;
-        }
+        .banner { background: linear-gradient(90deg, #ec4899, #8b5cf6, #3b82f6); background-size: 200% 200%; animation: gradientShift 6s ease infinite; color: white; text-align: center; padding: 12px 20px; font-size: 0.95rem; font-weight: 700; }
+        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        .maintenance-card {
-            background: var(--card-bg); border: 1px solid rgba(239, 68, 68, 0.4);
-            border-radius: 28px; padding: 50px 40px; max-width: 850px; width: 100%; text-align: center;
-        }
-
-        .maintenance-card h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 20px; color: #fca5a5; }
-        .maintenance-card p { color: var(--text-muted); font-size: 1.05rem; line-height: 1.7; margin-bottom: 20px; text-align: left; }
-
-        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; padding: 20px 30px; background: var(--card-bg); border-radius: 18px; border: 1px solid var(--border-glass); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; padding: 18px 28px; background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--border-glass); border-radius: 18px; }
         .logo-area h1 { font-size: 1.8rem; font-weight: 800; background: linear-gradient(135deg, #fff, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .hub-badge { background: rgba(139, 92, 246, 0.15); color: #c4b5fd; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+        .hub-badge { background: rgba(139, 92, 246, 0.15); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.3); padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; }
 
-        .hero { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 24px; padding: 50px; text-align: center; margin-bottom: 40px; }
-        .hero h2 { font-size: 2.8rem; font-weight: 800; margin-bottom: 20px; color: #fff; }
-        .hero p { color: var(--text-muted); font-size: 1.15rem; max-width: 800px; margin: 0 auto; line-height: 1.6; }
+        .hero-card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--border-glass); border-radius: 24px; padding: 50px 40px; text-align: center; margin-bottom: 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
+        .hero-card h2 { font-size: 3rem; font-weight: 800; margin-bottom: 20px; background: linear-gradient(135deg, #fff 30%, #c4b5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-card p { color: var(--text-muted); font-size: 1.15rem; max-width: 850px; margin: 0 auto; line-height: 1.6; }
 
-        .section-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px; }
-        @media(max-width: 900px) { .section-grid { grid-template-columns: 1fr; } }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; }
+        @media(max-width: 950px) { .grid-3 { grid-template-columns: 1fr; } }
 
-        .card { background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 20px; padding: 35px; }
-        .card h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 20px; color: #fff; }
-        .card p, .card li { color: var(--text-muted); line-height: 1.7; font-size: 0.95rem; }
-        .card ul { padding-left: 20px; }
-        .card li { margin-bottom: 10px; }
+        .card { background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--border-glass); border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .card h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 15px; color: #fff; }
+        .card p { color: var(--text-muted); line-height: 1.6; font-size: 0.95srem; margin-bottom: 20px; }
 
         .form-group { margin-bottom: 16px; }
-        label { display: block; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
-        input, textarea, select { width: 100%; background: rgba(10, 14, 28, 0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px 14px; color: #fff; font-size: 0.95rem; }
-        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent-primary); }
-        .btn { background: linear-gradient(135deg, var(--accent-primary), var(--accent-glow)); color: #fff; border: none; border-radius: 12px; padding: 12px 20px; font-weight: 700; width: 100%; cursor: pointer; }
-        .alert-box { padding: 10px; border-radius: 10px; margin-top: 10px; font-weight: 600; font-size: 0.85rem; display: none; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        label { display: block; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; color: #cbd5e1; }
+        input, textarea, select { width: 100%; background: rgba(10, 14, 28, 0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 16px; color: #fff; font-size: 0.95rem; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent-primary); box-shadow: 0 0 12px rgba(139,92,246,0.3); }
+        .btn { width: 100%; background: linear-gradient(135deg, var(--accent-primary), var(--accent-glow)); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
+        .success-msg { display: none; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; padding: 12px; border-radius: 10px; text-align: center; font-weight: 600; margin-top: 12px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
 
-    <div id="maintenanceOverlay">
-        <div class="maintenance-card">
-            <h1>RecNexus is Undergoing Maintenance</h1>
-            <p>Portal temporarily locked for infrastructure upgrades by Coach Level 99.</p>
-        </div>
+    <div class="banner">
+        ? ROAD TO 2027-2028: Milestone pre-release builds and staff testing environments active now!
     </div>
 
     <div class="container">
         <header>
             <div class="logo-area"><h1>RecNexus</h1></div>
-            <div class="hub-badge">Public Community Portal</div>
+            <div class="hub-badge">Official Community Hub</div>
         </header>
 
-        <section class="hero">
-            <h2>Reviving Classic Gaming Eras</h2>
-            <p>Official release slated for <strong>late 2027 &diamond; 2028</strong>.</p>
+        <section class="hero-card">
+            <h2>Reviving Classic VR & Desktop Eras</h2>
+            <p>RecNexus is engineered from the ground up for elite performance. Official release slated for <strong>late 2027 &diamond; 2028</strong>. Pre-register your player account or apply below to join the early staff testing cohort!</p>
         </section>
 
-        <div class="section-grid">
+        <div class="grid-3">
+            <!-- Project Info -->
             <div class="card">
                 <h3>About The Project</h3>
-                <p>We build custom server APIs and compatibility layers to preserve classic social gaming environments.</p>
+                <p>We build custom server APIs, cross-platform compatibility layers, and modern security protocols to preserve the golden age of social gaming environments.</p>
+                <div style="margin-top: 20px; padding: 15px; background: rgba(139,92,246,0.1); border-radius: 12px; border: 1px solid rgba(139,92,246,0.2);">
+                    <strong style="color: #c4b5fd;">Coach Level 99 Notice:</strong><br>
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">Applications are reviewed directly by Coach. Approved staff receive instant test accounts.</span>
+                </div>
             </div>
+
+            <!-- Pre-Register Card -->
+            <div class="card">
+                <h3>Player Pre-Registration</h3>
+                <p>Secure your username ahead of the 2027-2028 launch.</p>
+                <form onsubmit="handlePreRegister(event)">
+                    <div class="form-group"><label>Gamertag / Username</label><input type="text" id="preUser" required></div>
+                    <div class="form-group"><label>Email Address</label><input type="email" id="preEmail" required></div>
+                    <div class="form-group"><label>Password</label><input type="password" required></div>
+                    <button type="submit" class="btn">Pre-Register Account</button>
+                    <div id="preSuccess" class="success-msg">?? Account pre-registered successfully!</div>
+                </form>
+            </div>
+
+            <!-- Staff Application Form -->
             <div class="card">
                 <h3>Staff Application Portal</h3>
-                <form id="staffAppForm" onsubmit="submitStaffApplication(event)">
-                    <div class="form-group"><label>Username</label><input type="text" id="appUsername" required></div>
-                    <div class="form-group"><label>Email</label><input type="email" id="appEmail" required></div>
-                    <div class="form-group"><label>Role</label><select id="appRole"><option value="Moderator">Moderator</option><option value="Tester">Tester</option></select></div>
-                    <div class="form-group"><label>Experience</label><textarea id="appExperience" rows="2" required></textarea></div>
-                    <button type="submit" class="btn">Submit Application</button>
-                    <div id="appAlert" class="alert-box">Application submitted successfully!</div>
+                <p>Apply to test pre-release builds as staff.</p>
+                <form onsubmit="handleStaffApply(event)">
+                    <div class="form-group"><label>Username</label><input type="text" id="staffUser" required></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="staffEmail" required></div>
+                    <div class="form-group">
+                        <label>Role Requested</label>
+                        <select id="staffRole">
+                            <option value="Moderator">Moderator</option>
+                            <option value="Senior Moderator">Senior Moderator</option>
+                            <option value="Event Coordinator">Event Coordinator</option>
+                            <option value="Developer Tester">Developer Tester</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Experience / Why you?</label><textarea id="staffExp" rows="2" required></textarea></div>
+                    <button type="submit" class="btn">Submit Staff Application</button>
+                    <div id="staffSuccess" class="success-msg">?? Application submitted! Awaiting Coach review.</div>
                 </form>
             </div>
         </div>
     </div>
 
     <script>
-        async function submitStaffApplication(e) {
+        function handlePreRegister(e) {
             e.preventDefault();
+            document.getElementById('preSuccess').style.display = 'block';
+            setTimeout(() => document.getElementById('preSuccess').style.display = 'none', 4000);
+            e.target.reset();
+        }
+
+        async function handleStaffApply(e) {
+            e.preventDefault();
+            const username = document.getElementById('staffUser').value;
+            const email = document.getElementById('staffEmail').value;
+            const roleRequested = document.getElementById('staffRole').value;
+            const experience = document.getElementById('staffExp').value;
+
             const res = await fetch('/api/apply', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: document.getElementById('appUsername').value,
-                    email: document.getElementById('appEmail').value,
-                    roleRequested: document.getElementById('appRole').value,
-                    experience: document.getElementById('appExperience').value
-                })
+                body: JSON.stringify({ username, email, roleRequested, experience })
             });
-            const data = await res.json();
-            if(data.success) {
-                document.getElementById('appAlert').style.display = 'block';
-                document.getElementById('staffAppForm').reset();
+
+            if(res.ok) {
+                const msg = document.getElementById('staffSuccess');
+                msg.style.display = 'block';
+                setTimeout(() => msg.style.display = 'none', 4000);
+                e.target.reset();
             }
         }
     </script>
