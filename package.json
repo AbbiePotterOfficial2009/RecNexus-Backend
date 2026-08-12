@@ -1,7 +1,7 @@
 {
   "name": "recnexus-backend",
   "version": "1.0.0",
-  "description": "RecNexus Administration Backend",
+  "description": "RecNexus Backend and Admin Server",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
