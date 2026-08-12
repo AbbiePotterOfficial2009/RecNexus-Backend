@@ -30,7 +30,7 @@ app.post('/api/admin/update', (req, res) => {
 app.post('/api/admin/reset-password', (req, res) => {
     const { username, newPassword } = req.body;
     if (username && newPassword) {
-        res.json({ success: true, message: Password for user '\' has been successfully reset by support team. });
+        res.json({ success: true, message: `Password for user '${username}' has been successfully reset by support team.` });
     } else {
         res.status(400).json({ success: false, message: "Username and new password required." });
     }
